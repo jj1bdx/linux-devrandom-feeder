@@ -28,6 +28,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <bsd/stdlib.h>
+#include <bsd/string.h>
 #include <err.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -92,6 +94,7 @@ int main(int argc, char *argv[]) {
     uint8_t hashbuf[BUFFERSIZE + (sizeof(uint64_t) * 4)];
     uint64_t hash[8];
 
+    inputbase = "";
     if (argc < 2) {
         usage();
     }
@@ -182,7 +185,7 @@ int main(int argc, char *argv[]) {
         ~(ECHO|ECHOE|ECHOK|ECHOKE|ECHOCTL|
                 ECHONL|ICANON|ISIG|IEXTEN|NOFLSH|TOSTOP|PENDIN);
     ttyconfig.c_cflag &=
-        ~(CSIZE|PARENB|CRTS_IFLOW|CCTS_OFLOW|MDMBUF);
+        ~(CSIZE|PARENB);
     ttyconfig.c_cflag |= CS8|CREAD;
     ttyconfig.c_cflag &= ~CLOCAL;
     ttyconfig.c_cc[VMIN] = 1;
