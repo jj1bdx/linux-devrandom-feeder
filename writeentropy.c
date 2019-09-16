@@ -1,3 +1,7 @@
+// This source code file is licensed under Unlicense https://unlicense.org/
+// and is a part of https://github.com/jj1bdx/infnoise-linux
+// modified for linux-devrandom-feeder.
+
 // This writes entropy to the Linux /dev/random pool using ioctl, so that
 // entropy increases.
 
@@ -60,7 +64,7 @@ void inmWriteEntropyStart(uint32_t bufLen) {
   //           readNumberFromFile(SIZE_PROC_FILENAME), inmFillWatermark);
 }
 
-// Block until either the entropy pool has room, or 1 minute has passed.
+// Block until either the entropy pool has room, or 0.1 second has passed.
 void inmWaitForPoolToHaveRoom() {
   int ent_count;
   struct pollfd pfd = {
