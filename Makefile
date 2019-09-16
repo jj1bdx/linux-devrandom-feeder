@@ -3,7 +3,8 @@ SRCS=	feedrandom.c sha512.c sha512-api.c
 OBJS=	feedrandom.o sha512.o sha512-api.o
 
 CC=		cc
-CFLAGS+= -O2 -pipe -std=c99 -pedantic -Wall
+CFLAGS+= -O2 -pipe -std=gnu99 -pedantic -Wall
+LIBS+= -lbsd
 
 all: $(PROG)
 
