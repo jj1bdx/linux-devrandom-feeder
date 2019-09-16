@@ -65,7 +65,7 @@ extern void inmWriteEntropyToPool(uint8_t *bytes, uint32_t length,
 
 #define BUFFERSIZE (512)
 
-void usage(void) {
+static void usage(void) {
   errx(EX_USAGE,
        "Usage: %s [-d tty-device] [-s speed] [-o] [-t] [-h]\n"
        "Only tty[.+] and /dev/tty[.+] are accepted\n"
@@ -78,12 +78,26 @@ void usage(void) {
        getprogname(), OUTPUTFILE, BUFFERSIZE);
 }
 
+// Write the bytes to either stdout, or /dev/random.
+static void output_bytes(uint8_t *bytes, uint32_t length, uint32_t entropy,
+                         int standard_output) {
+  if (standard_output) {
+    if (fwrite(bytes, 1, length, stdout) != length) {
+      fputs("Unable to write output to stdout\n", stderr);
+      exit(1);
+    }
+  } else {
+    inmWaitForPoolToHaveRoom();
+    inmWriteEntropyToPool(bytes, length, entropy);
+  }
+}
+
 int main(int argc, char *argv[]) {
 
   uint8_t rbuf[BUFFERSIZE], *p;
-  int ttyfd, randomfd;
+  int ttyfd;
   struct termios ttyconfig;
-  ssize_t rsize, wsize;
+  ssize_t rsize;
   int i;
   int dflag = 0;
   int ch;
@@ -199,17 +213,9 @@ int main(int argc, char *argv[]) {
     err(EX_IOERR, "input tcsetattr for raw and speed %ld failed", speedval);
   }
 
-  /* open random output device */
-  if (oflag) {
-    /* use stdout */
-    if ((randomfd = fcntl(STDOUT_FILENO, F_DUPFD, 0)) == -1) {
-      err(EX_IOERR, "cannot open stdout");
-    }
-  } else {
-    /* use default output file */
-    if ((randomfd = open(OUTPUTFILE, O_WRONLY)) == -1) {
-      errx(EX_IOERR, "cannot open %s", OUTPUTFILE);
-    }
+  if (!oflag) {
+    /* open random output device */
+    inmWriteEntropyStart(BUFFERSIZE);
   }
 
   /* initialize sha512 hash data */
@@ -244,15 +250,12 @@ int main(int argc, char *argv[]) {
         sha512_hash(hashbuf, sizeof(hashbuf), hash);
         /* write hash to output */
         for (i = 0; i < 8; i++) {
-          if ((wsize = write(randomfd, &(hash[i]), sizeof(uint64_t))) == -1) {
-            err(EX_IOERR, "/dev/random hash write failed");
-          }
+          output_bytes((uint8_t *)&(hash[i]), sizeof(uint64_t),
+                       sizeof(uint64_t) / 2, oflag);
         }
       } else {
         /* writing transparently */
-        if ((wsize = write(randomfd, rbuf, (size_t)BUFFERSIZE)) == -1) {
-          err(EX_IOERR, "/dev/random write failed");
-        }
+        output_bytes(rbuf, (size_t)BUFFERSIZE, (size_t)(BUFFERSIZE / 8), oflag);
       }
     } else {
       /* clear discarding flag */
