@@ -1,4 +1,4 @@
-# feedrandom: an entropy injection feeder for OS X
+# feedrandom: an entropy injection feeder for Linux
 
 ## WARNING
 
@@ -7,17 +7,23 @@ which might be caused by the use of this software. Caveat emptor.
 
 ## What this driver is for
 
-To accomodate True Random Number Generator (TRNG) random bits into OS X kernel.
+To accomodate True Random Number Generator (TRNG) random bits into Linux kernel.
 
 ## IMPORTANT SECURITY NOTICE
 
 *Note well: providing incorrect permission and unauthenticated or unscreened
 data to /dev/random may degrade the quality of /dev/random, /dev/urandom, and
-the security of the entire OS X operating system.*
+the security of the entire Linux operating system.*
 
 ## Tested environment
 
-* OS X 10.11.1
+* Ubuntu 18.04 LTS
+
+## Requirement
+
+This program uses libbsd; install it as follows for Ubuntu
+    
+    sudo apt install libbsd-dev
 
 ## How this works
 
